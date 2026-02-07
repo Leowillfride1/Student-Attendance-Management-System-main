@@ -23,116 +23,113 @@ async def seed_database():
     print("Creating admin user...")
     admin = {
         "id": "admin-001",
-        "college_id": "ADMIN001",
-        "name": "System Administrator",
-        "email": "admin@college.edu",
+        "college_id": "brubk2025",
+        "name": "Leowillfride A",
+        "email": "leowillfride@gmail.com",
         "role": "admin",
-        "password_hash": pwd_context.hash("admin123"),
+        "password_hash": pwd_context.hash("Leow1012"),
         "created_at": datetime.now(timezone.utc).isoformat()
     }
     await db.users.insert_one(admin)
     
-    print("Creating departments...")
-    departments = [
-        {"id": "dept-cs", "name": "Computer Science", "code": "CS", "created_at": datetime.now(timezone.utc).isoformat()},
-        {"id": "dept-ece", "name": "Electronics & Communication", "code": "ECE", "created_at": datetime.now(timezone.utc).isoformat()}
-    ]
-    await db.departments.insert_many(departments)
+    print("Creating Department and Course...")
+    dept_id = "dept-bca"
+    course_id = "course-bca-3"
+    await db.departments.insert_one({
+        "id": dept_id, "name": "Computer Applications", "code": "BCA", "created_at": datetime.now(timezone.utc).isoformat()
+    })
+    await db.courses.insert_one({
+        "id": course_id, "name": "BCA - Year 3", "code": "BCA-Y3", "department_id": dept_id, "year": 3, "created_at": datetime.now(timezone.utc).isoformat()
+    })
     
-    print("Creating courses...")
-    courses = [
-        {"id": "course-cs1", "name": "Computer Science - Year 1", "code": "CS-Y1", "department_id": "dept-cs", "year": 1, "created_at": datetime.now(timezone.utc).isoformat()},
-        {"id": "course-cs2", "name": "Computer Science - Year 2", "code": "CS-Y2", "department_id": "dept-cs", "year": 2, "created_at": datetime.now(timezone.utc).isoformat()},
-        {"id": "course-ece1", "name": "Electronics - Year 1", "code": "ECE-Y1", "department_id": "dept-ece", "year": 1, "created_at": datetime.now(timezone.utc).isoformat()}
+    print("Creating Faculty and Subjects...")
+    # Faculty based on your uploaded table
+    staff_list = [
+        {"id": "fac-suganya", "name": "Ms. B. Suganya", "college_id": "FAC_SUG_01", "password": "faculty123"},
+        {"id": "fac-shunmuga", "name": "Ms. K. Shunmugapriya", "college_id": "FAC_SHU_02", "password": "faculty123"},
+        {"id": "fac-sathya", "name": "Ms. K. Sathya", "college_id": "FAC_SAT_03", "password": "faculty123"},
+        {"id": "fac-ganesan", "name": "Dr. A. Ganesan", "college_id": "FAC_GAN_04", "password": "faculty123"}
     ]
-    await db.courses.insert_many(courses)
     
-    print("Creating faculty...")
-    faculty_data = [
-        {"id": f"faculty-{i}", "college_id": f"FAC{1000+i}", "name": f"Dr. Faculty {i}", "email": f"faculty{i}@college.edu", 
-         "role": "faculty", "department_id": "dept-cs" if i <= 3 else "dept-ece", "password_hash": pwd_context.hash("faculty123"),
-         "created_at": datetime.now(timezone.utc).isoformat()}
-        for i in range(1, 6)
+    faculty_users = []
+    for staff in staff_list:
+        faculty_users.append({
+            "id": staff["id"],
+            "college_id": staff["college_id"],
+            "name": staff["name"],
+            "email": f"{staff['id']}@scas.edu.in",
+            "role": "faculty",
+            "department_id": dept_id,
+            "password_hash": pwd_context.hash(staff["password"]),
+            "created_at": datetime.now(timezone.utc).isoformat()
+        })
+    await db.users.insert_many(faculty_users)
+
+    # Subjects based on your uploaded table
+    subjects_data = [
+        {"id": "sub-63a", "name": "Graphics & Multimedia", "code": "63A", "faculty_id": "fac-suganya"},
+        {"id": "sub-63b", "name": "Project Work Lab", "code": "63B", "faculty_id": "fac-shunmuga"},
+        {"id": "sub-6ea", "name": "Computer Networks", "code": "6EA", "faculty_id": "fac-ganesan"},
+        {"id": "sub-6ef", "name": "Internet of Things (IoT)", "code": "6EF", "faculty_id": "fac-suganya"},
+        {"id": "sub-nm", "name": "Cyber Security", "code": "NM", "faculty_id": "fac-shunmuga"}
     ]
-    await db.users.insert_many(faculty_data)
-    
-    print("Creating subjects...")
-    subjects = [
-        {"id": "subj-1", "name": "Data Structures", "code": "CS101", "course_id": "course-cs1", "faculty_id": "faculty-1", "created_at": datetime.now(timezone.utc).isoformat()},
-        {"id": "subj-2", "name": "Database Systems", "code": "CS102", "course_id": "course-cs1", "faculty_id": "faculty-2", "created_at": datetime.now(timezone.utc).isoformat()},
-        {"id": "subj-3", "name": "Web Development", "code": "CS103", "course_id": "course-cs1", "faculty_id": "faculty-1", "created_at": datetime.now(timezone.utc).isoformat()},
-        {"id": "subj-4", "name": "Algorithms", "code": "CS201", "course_id": "course-cs2", "faculty_id": "faculty-3", "created_at": datetime.now(timezone.utc).isoformat()},
-        {"id": "subj-5", "name": "Digital Electronics", "code": "ECE101", "course_id": "course-ece1", "faculty_id": "faculty-4", "created_at": datetime.now(timezone.utc).isoformat()}
+    for sub in subjects_data:
+        sub.update({"course_id": course_id, "created_at": datetime.now(timezone.utc).isoformat()})
+    await db.subjects.insert_many(subjects_data)
+
+    print("Creating 23 Students from roster...")
+    # Excluding 10 and 11 as requested
+    student_roster = [
+        ("2322J0998", "ABINAYA V"), ("2322J0999", "ANBAZHAGAN S"), ("2322J1000", "ANBUSIVAM M"),
+        ("2322J1001", "ATCHAYA V"), ("2322J1002", "ATHIHIYAN R"), ("2322J1003", "BALACHANDAR R"),
+        ("2322J1004", "DHANALAKSHMI"), ("2322J1005", "EZHUMALAI A"), ("2322J1006", "HARIKARAN M"),
+        ("2322J1009", "KALAIYARASI K"), ("2322J1010", "KISHORE KUMAR R"), ("2322J1011", "LAKSHMANAN"),
+        ("2322J1012", "LEOWILLFRIDE A"), ("2322J1013", "MADHUSREE P"), ("2322J1014", "MANOGARAN M"),
+        ("2322J1015", "NIVIN KUMAR M"), ("2322J1016", "POOJADHARSHINI M"), ("2322J1017", "SANJITH KUMAR P"),
+        ("2322J1018", "SRI HARIHARAN S J"), ("2322J1019", "THIMONIN THIBISHA P"), ("2322J1020", "VEERAPANDIYAN R"),
+        ("2322J1021", "YASHVANTH"), ("2322J1022", "YOGESWARAN K")
     ]
-    await db.subjects.insert_many(subjects)
-    
-    print("Creating students...")
+
     students = []
-    for i in range(1, 31):
-        course_id = "course-cs1" if i <= 20 else "course-ece1"
-        dept_id = "dept-cs" if i <= 20 else "dept-ece"
+    for idx, (reg_no, name) in enumerate(student_roster, 1):
         students.append({
-            "id": f"student-{i}",
-            "college_id": f"STU{2000+i}",
-            "name": f"Student {i}",
-            "email": f"student{i}@college.edu",
+            "id": f"student-{reg_no}",
+            "college_id": reg_no,
+            "name": name,
+            "email": f"scasstudent{idx}@gmail.com",
             "role": "student",
             "department_id": dept_id,
             "course_id": course_id,
-            "password_hash": pwd_context.hash("student123"),
+            "password_hash": pwd_context.hash("student123"), # Default pass for classmates
             "created_at": datetime.now(timezone.utc).isoformat()
         })
     await db.users.insert_many(students)
-    
-    print("Creating class sessions and attendance records...")
-    # Create sessions for the past 30 days
-    base_date = datetime.now(timezone.utc) - timedelta(days=30)
-    
-    for subject in subjects:
-        session_count = 0
-        for day in range(0, 30, 2):  # Classes every 2 days
+
+    print("Generating class history for past 10 days...")
+    # This creates fake attendance history so your charts look full
+    base_date = datetime.now(timezone.utc) - timedelta(days=10)
+    for sub in subjects_data:
+        for day in range(10):
             session_date = (base_date + timedelta(days=day)).date().isoformat()
-            session_id = f"session-{subject['id']}-{session_count}"
-            
-            session = {
-                "id": session_id,
-                "subject_id": subject["id"],
-                "faculty_id": subject["faculty_id"],
-                "date": session_date,
-                "created_at": datetime.now(timezone.utc).isoformat()
-            }
-            await db.class_sessions.insert_one(session)
-            session_count += 1
-            
-            # Mark attendance for students in this course
-            course_students = [s for s in students if s["course_id"] == subject["course_id"]]
-            
-            for student in course_students:
-                # Random attendance with 70-90% probability of being present
-                status = "present" if random.random() < 0.80 else "absent"
-                
-                attendance = {
-                    "id": f"att-{session_id}-{student['id']}",
-                    "session_id": session_id,
-                    "student_id": student["id"],
-                    "subject_id": subject["id"],
-                    "status": status,
-                    "marked_by": subject["faculty_id"],
-                    "created_at": datetime.now(timezone.utc).isoformat()
-                }
-                await db.attendance_records.insert_one(attendance)
-    
-    print("\n✅ Database seeded successfully!")
-    print("\n📋 Login Credentials:")
-    print("\nAdmin:")
-    print("  College ID: ADMIN001")
-    print("  Password: admin123")
-    print("\nFaculty (any of these):")
-    print("  College ID: FAC1001, FAC1002, FAC1003, FAC1004, FAC1005")
-    print("  Password: faculty123")
-    print("\nStudent (any of these):")
-    print("  College ID: STU2001, STU2002, ... STU2030")
-    print("  Password: student123")
+            s_id = f"sess-{sub['code']}-{day}"
+            await db.class_sessions.insert_one({
+                "id": s_id, "subject_id": sub["id"], "faculty_id": sub["faculty_id"],
+                "date": session_date, "created_at": datetime.now(timezone.utc).isoformat()
+            })
+            for stu in students:
+                status = "present" if random.random() < 0.85 else "absent"
+                await db.attendance_records.insert_one({
+                    "id": f"att-{s_id}-{stu['college_id']}", "session_id": s_id,
+                    "student_id": stu["id"], "subject_id": sub["id"], "status": status,
+                    "marked_by": sub["faculty_id"], "created_at": datetime.now(timezone.utc).isoformat()
+                })
+
+    print("\n✅ BCA Class Database seeded successfully!")
+    print(f"Total Students: {len(students)}")
+    print("\n📋 NEW LOGIN CREDENTIALS:")
+    print("ADMIN: brubk2025 / Leow1012")
+    print("FACULTY: FAC_SUG_01 (Ms. Suganya) / faculty123")
+    print("STUDENT: 2322J1012 (Your ID) / student123")
     
     client.close()
 
